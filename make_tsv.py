@@ -9,6 +9,8 @@ def process(out: TextIO):
     with open(pathlib.Path() / fname) as f:
         d = json.load(f)
 
+    print(f'Words: {len(d)}')
+
     for i, (word, definition) in enumerate(d.items()):
         assert '\t' not in word
         assert '\t' not in definition
