@@ -31,6 +31,7 @@ fn print_defns(defns: &str) {
 }
 
 fn main() -> io::Result<()> {
+    // TODO: ^WORD\tPOS\tDEFN\tEXAMPLE$
     let hm = make_words();
     let args = Cli::from_args();
     match &args.word as &str {
@@ -43,7 +44,8 @@ fn main() -> io::Result<()> {
 //                println!("{}", line.unwrap());
                 let defns = find_word(&hm, line.unwrap().to_string());
                 print_defns(&defns);
-                println!("\n");
+                // Separate sections between words by a newline
+                println!();
             }
         }
         word => {
