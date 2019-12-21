@@ -5,6 +5,11 @@ pub struct Definition {
     pub defns: String,
 }
 
+pub struct Mappings {
+    pub words: Vec<&'static str>,
+    pub defns: Vec<&'static str>,
+}
+
 /// Generates a hashmap of the dictionary definitions from a static
 /// resource compiled right into the executable.
 pub fn make_words() -> Vec<Definition> {
@@ -18,4 +23,11 @@ pub fn make_words() -> Vec<Definition> {
     }).collect();
 //    println!("{}", now.elapsed().unwrap().as_millis());
     out
+}
+
+pub fn make_words2() -> Mappings {
+    Mappings {
+        words: include_str!("../words.txt").lines().collect(),
+        defns: include_str!("../defns.txt").lines().collect(),
+    }
 }
