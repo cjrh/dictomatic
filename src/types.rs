@@ -1,31 +1,14 @@
-//use std::time::{SystemTime, UNIX_EPOCH};
-
-pub struct Definition {
-    pub word: String,
-    pub defns: String,
-}
-
 pub struct Mappings {
     pub words: Vec<&'static str>,
     pub defns: Vec<&'static str>,
 }
 
 /// Generates a hashmap of the dictionary definitions from a static
-/// resource compiled right into the executable.
-pub fn make_words() -> Vec<Definition> {
-//    let now = SystemTime::now();
-//    println!("{}", now.elapsed().unwrap().as_millis());
-    const V: &str = include_str!("../dictomatic.tsv");
-//    println!("{}", now.elapsed().unwrap().as_millis());
-    let out = V.lines().map(|line| {
-        let parts: Vec<&str> = line.splitn(2, "\t").collect();
-        Definition { word: parts[0].to_string(), defns: parts[1].to_string() }
-    }).collect();
-//    println!("{}", now.elapsed().unwrap().as_millis());
-    out
-}
-
-pub fn make_words2() -> Mappings {
+/// resource compiled right into the executable. The length of the
+/// two vectors is the same, and indexes from correspond to indexes
+/// on the other. The `defns` are JSON-encoded arrays of strings,
+/// since there can be multiple definitions for a given word.
+pub fn make_words() -> Mappings {
     Mappings {
         words: include_str!("../words.txt").lines().collect(),
         defns: include_str!("../defns.txt").lines().collect(),
