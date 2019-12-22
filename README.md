@@ -1,6 +1,6 @@
 [![Licence](https://img.shields.io/badge/License-AGPL%203-purple.svg)](https://opensource.org/licenses/AGPL-3.0)
-[![Download Windows](https://img.shields.io/badge/download-windows-green.svg?logo=windows)](https://github.com/cjrh/dictomatic/releases/download/v0.0.3/dictomatic.exe)
-[![Download Linux](https://img.shields.io/badge/download-linux-green.svg?logo=linux)](https://github.com/cjrh/dictomatic/releases/download/v0.0.3/dictomatic)
+[![Download Windows](https://img.shields.io/badge/download-windows-green.svg?logo=windows)](https://github.com/cjrh/dictomatic/releases/download/v0.1.0/dictomatic)
+[![Download Linux](https://img.shields.io/badge/download-linux-green.svg?logo=linux)](https://github.com/cjrh/dictomatic/releases/download/v0.1.0/dictomatic)
 
 # dictomatic
 Static, offline, command-line CLI dictionary
