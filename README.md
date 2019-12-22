@@ -110,7 +110,7 @@ feed that output into _dictomatic_.
 Take advantage of CLI filters! How about extracting only the parts of speech:
 
 ```shell script
-$ ./target/release/dictomatic.exe jump | awk 'BEGIN {OFS="\t"}; {print $2}'
+$ ./target/release/dictomatic.exe jump | awk -F '\t' '{print $2}'
 noun
 noun
 noun
@@ -135,21 +135,72 @@ verb
 
 ```
 
-Count the parts of speech:
+Count the parts of speech (`awk NF` to drop the blank line):
 
 ```shell script
-$ dictomatic.exe jump | awk NF | awk 'BEGIN {OFS="\t"}; {print $2}' | sort | uniq -c
+$ /dictomatic.exe jump | awk NF | cut -f2 | sort | uniq -c
       6 noun
      15 verb
 ```
 
-Filter a word with another word:
+Filter definitions and extract the definition only:
 
 ```shell script
 $ ./target/release/dictomatic.exe jump | grep attack | cut -f3
 make a sudden physical attack on
 ```
 
+Extract only definitions and remove punctuation:
 
+```shell script
+$ ./target/release/dictomatic.exe jump | cut -f3  | tr -d [:punct:]
+the act of jumping
+descent with a parachute
+a sudden involuntary movement
+film an abrupt transition from one scene to another
+an abrupt transition
+a sudden and decisive increase
+go back and forth
+rise in rank or status
+increase suddenly and significantly
+pass abruptly from one state or topic to another
+bypass
+enter eagerly into
+make a sudden physical attack on
+start a car engine whose battery is dead by connecting it to another cars battery
+move or jump suddenly as if in surprise or alarm
+move forward by leaps and bounds
+cause to jump or leap
+jump from an airplane and descend with a parachute
+run off or leave the rails
+jump down from an elevated point
+be highly noticeable
 
+```
 
+The full roundtrip, where we 
+- find definitions of "jump",
+- filter those by appearance of the word "sudden",
+- remove punctuation,
+- convert spaces to newlines (so each word in the definition is on its own line),
+- remove duplicates,
+- filter for words longer than 8 characters,
+- and feed back into _dictomatic_ for definitions of _those_ words!!
+
+```shell script
+$ dictomatic.exe jump \
+    | cut -f3 \
+    | grep sudden \
+    | tr -d [:punct:] \
+    | tr [:blank:] '\n' \
+    | sort -u \
+    | awk 'length($0) > 8' \
+    | dictomatic.exe
+involuntary     adjective       not subject to the control of the will  involuntary manslaughter
+involuntary     adjective       controlled by the autonomic nervous system      -
+
+significantly   adverb  in a significant manner our budget will be significantly affected by these new cuts
+significantly   adverb  in an important way or to an important degree   -
+significantly   adverb  in a statistically significant way      the two groups differed significantly
+
+```
