@@ -110,7 +110,7 @@ feed that output into _dictomatic_.
 Take advantage of CLI filters! How about extracting only the parts of speech:
 
 ```shell script
-$ ./target/release/dictomatic.exe jump | awk -F '\t' '{print $2}'
+$ dictomatic.exe jump | awk -F '\t' '{print $2}'
 noun
 noun
 noun
@@ -138,7 +138,7 @@ verb
 Count the parts of speech (`awk NF` to drop the blank line):
 
 ```shell script
-$ /dictomatic.exe jump | awk NF | cut -f2 | sort | uniq -c
+$ dictomatic.exe jump | awk NF | cut -f2 | sort | uniq -c
       6 noun
      15 verb
 ```
@@ -146,14 +146,14 @@ $ /dictomatic.exe jump | awk NF | cut -f2 | sort | uniq -c
 Filter definitions and extract the definition only:
 
 ```shell script
-$ ./target/release/dictomatic.exe jump | grep attack | cut -f3
+$ dictomatic.exe jump | grep attack | cut -f3
 make a sudden physical attack on
 ```
 
 Extract only definitions and remove punctuation:
 
 ```shell script
-$ ./target/release/dictomatic.exe jump | cut -f3  | tr -d [:punct:]
+$ dictomatic.exe jump | cut -f3  | tr -d [:punct:]
 the act of jumping
 descent with a parachute
 a sudden involuntary movement
