@@ -143,7 +143,12 @@ $ dictomatic.exe jump | awk NF | awk 'BEGIN {OFS="\t"}; {print $2}' | sort | uni
      15 verb
 ```
 
+Filter a word with another word:
 
+```shell script
+$ ./target/release/dictomatic.exe jump | grep attack | cut -f3
+make a sudden physical attack on
+```
 
 
 
