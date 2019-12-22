@@ -1,9 +1,16 @@
+[![Licence](https://img.shields.io/badge/License-AGPL%203-purple.svg)](https://opensource.org/licenses/AGPL-3.0)
+
+[![Download Windows](https://img.shields.io/badge/download-windows-green.svg?logo=windows)](https://github.com/cjrh/dictomatic/releases/download/v0.0.3/dictomatic.exe)
+
+[![Download Linux](https://img.shields.io/badge/download-linux-green.svg?logo=linux)](https://github.com/cjrh/dictomatic/releases/download/v0.0.3/dictomatic)
+
+
 # dictomatic
 Static, offline, command-line CLI dictionary
 
 ## Demo
 
-Provide a word, get the definitions back:
+Provide a word, get the definitions back in a tab-delimited table:
 
 ```shell script
 $ dictomatic.exe snag
@@ -18,7 +25,8 @@ snag    verb    get by acting quickly and smartly       snag a bargain
 
 ## Features
 
-- Definitions from the [Wordset Project](https://github.com/wordset/wordset-dictionary)
+- Definitions from the [Wordset Project](https://github.com/wordset/wordset-dictionary),
+  which is licensed under the _Creative Commons Attribution-ShareAlike 4.0 International License_
 - Statically compiled, word lists are linked in. No dependencies. 
   Just download an executable for your target platform.
 - Fast; takes about 40 ms to emit the words. This makes it easy to drive 
@@ -30,10 +38,10 @@ Just download the executable. Check out the Releases tab.
 
 ## Overview
 
-It looks a bit odd in the demo above because the sections are separated
-by tabs `\t`. Tabs work well as a separator in text-based applications 
-because they almost never appear in text. This output format is designed
-to be easy to use in unix command-line pipelines.
+The demo output further up looks a bit odd in the demo above because the 
+sections are separated by tabs `\t`. Tabs work well as a separator in 
+text-based applications because they almost never appear in text. This 
+output format is designed to be easy to use in unix command-line pipelines.
 
 There are always four sections (separated by tabs) in each line:
 
@@ -110,7 +118,7 @@ feed that output into _dictomatic_.
 Take advantage of CLI filters! How about extracting only the parts of speech:
 
 ```shell script
-$ dictomatic.exe jump | awk -F '\t' '{print $2}'
+$ dictomatic.exe jump | cut -f2
 noun
 noun
 noun
@@ -176,6 +184,20 @@ run off or leave the rails
 jump down from an elevated point
 be highly noticeable
 
+```
+
+Extract only usage-examples (filtering out `-`), with the part-of-speech
+in trailing brackets:
+
+```shell script
+$ dictomatic.exe jump | awk NF | awk -F '\t' '$4!="-"{ print $4 " [" $2 "]" }'
+a jump in attendance [noun]
+My new novel jumped high on the bestseller list. [verb]
+Prices jumped overnight [verb]
+We jumped into the game. [verb]
+The muggers jumped the couple coming out of the gallery. [verb]
+the trainer jumped the tiger through the hoop [verb]
+the parachutist didn't want to jump [verb]
 ```
 
 The full roundtrip, where we 
