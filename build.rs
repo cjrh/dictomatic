@@ -26,13 +26,21 @@ fn build_index(src: &str, dst: &Path) {
     let mut start = 0;
     for (i, &b) in text.iter().enumerate() {
         if b == b'\n' {
-            let end = if i > start && text[i - 1] == b'\r' { i - 1 } else { i };
+            let end = if i > start && text[i - 1] == b'\r' {
+                i - 1
+            } else {
+                i
+            };
             push(start, end);
             start = i + 1;
         }
     }
     if start < text.len() {
-        let end = if text[text.len() - 1] == b'\r' { text.len() - 1 } else { text.len() };
+        let end = if text[text.len() - 1] == b'\r' {
+            text.len() - 1
+        } else {
+            text.len()
+        };
         push(start, end);
     }
 
