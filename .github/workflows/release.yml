@@ -1,0 +1,46 @@
+name: Release
+
+# Build the release binaries on a version tag (e.g. v0.1.0) and attach them
+# to the matching GitHub Release. The asset names (`dictomatic`,
+# `dictomatic.exe`) match the download badges in README.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            bin: dictomatic
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: dictomatic.exe
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      # The musl target is linked with rust-lld (see .cargo/config.toml), which
+      # ships inside the toolchain but is not on PATH by default.
+      - name: Expose rust-lld (Linux)
+        if: runner.os == 'Linux'
+        run: echo "$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Upload to release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: target/${{ matrix.target }}/release/${{ matrix.bin }}
