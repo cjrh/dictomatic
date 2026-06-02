@@ -1,10 +1,11 @@
 name: Release
 
 # Build the release binaries on a version tag (e.g. v0.1.0) and attach them to
-# the matching GitHub Release. Assets are named with the Rust target triple,
-# the convention `cargo binstall` and the rest of the ecosystem expect:
-#   dictomatic-x86_64-unknown-linux-musl       (Linux, static)
-#   dictomatic-x86_64-pc-windows-msvc.exe      (Windows)
+# the matching GitHub Release. Assets are named with the Rust target triple, the
+# convention `cargo binstall` and the rest of the ecosystem expect. The whole
+# matrix builds on three standard runners — the non-native targets are
+# cross-compiled with `rustup target add` (and rust-lld for the static musl
+# builds), so no `cross`/QEMU or apt cross-toolchains are required.
 # See `[package.metadata.binstall]` in Cargo.toml and the badges in README.md.
 on:
   push:
@@ -24,10 +25,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Linux x86_64 runner. aarch64 is cross-linked statically via rust-lld.
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bin: dictomatic
+            asset: dictomatic-x86_64-unknown-linux-gnu
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             bin: dictomatic
             asset: dictomatic-x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            bin: dictomatic
+            asset: dictomatic-aarch64-unknown-linux-musl
+          # macOS Apple-Silicon runner. The Intel build is cross-compiled.
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bin: dictomatic
+            asset: dictomatic-x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bin: dictomatic
+            asset: dictomatic-aarch64-apple-darwin
+          # Windows x86_64 runner.
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             bin: dictomatic.exe
@@ -38,11 +58,13 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
-      # The musl target is linked with rust-lld (see .cargo/config.toml), which
-      # ships inside the toolchain but is not on PATH by default.
-      - name: Expose rust-lld (Linux)
-        if: runner.os == 'Linux'
-        run: echo "$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
+      # The musl targets are linked with rust-lld (see .cargo/config.toml), which
+      # ships inside the toolchain but is not on PATH by default. The host's
+      # rust-lld cross-links every musl target built here.
+      - name: Expose rust-lld
+        if: contains(matrix.target, 'musl')
+        run: |
+          echo "$(rustc --print sysroot)/lib/rustlib/$(rustc -vV | sed -n 's/^host: //p')/bin" >> "$GITHUB_PATH"
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
       # Rename the binary to its target-triple asset name. softprops/action-gh-release
