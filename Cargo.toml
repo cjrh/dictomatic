@@ -3,8 +3,24 @@ name = "dictomatic"
 version = "0.1.0"
 authors = ["Caleb Hattingh <caleb.hattingh@gmail.com>"]
 edition = "2018"
+description = "Static, offline, command-line CLI English dictionary"
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/cjrh/dictomatic"
+homepage = "https://github.com/cjrh/dictomatic"
+readme = "README.md"
+# Distributed as prebuilt binaries via GitHub Releases, not crates.io. This
+# also keeps `cargo release` from attempting a publish (the embedded data files
+# would exceed the crates.io size limit anyway).
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# Let `cargo binstall --git <repo>` download the prebuilt release binary instead
+# of compiling. The Release workflow uploads the binary as a bare file named
+# `dictomatic` (Linux) / `dictomatic.exe` (Windows) under the `vX.Y.Z` tag.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }{ binary-ext }"
+pkg-fmt = "bin"
 
 [dependencies]
 serde_json = "1.0"

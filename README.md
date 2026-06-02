@@ -31,7 +31,31 @@ snag    verb    get by acting quickly and smartly       snag a bargain
   
 ## Install
 
-Just download the executable. Check out the Releases tab.
+### Download a prebuilt binary
+
+The simplest option: grab the executable for your platform from the
+[Releases](https://github.com/cjrh/dictomatic/releases) page (these are the same
+binaries the download badges above point at).
+
+### Install with cargo
+
+`dictomatic` is **not** published to crates.io, so the bare
+`cargo install dictomatic` and `cargo binstall dictomatic` forms will **not**
+work. Point cargo at this GitHub repository by URL instead:
+
+```shell script
+# Prebuilt binary via cargo-binstall (no compilation; downloads the release
+# binary built by CI). Requires https://github.com/cargo-bins/cargo-binstall
+cargo binstall --git https://github.com/cjrh/dictomatic dictomatic
+
+# Or compile and install from source (needs a Rust toolchain):
+cargo install --git https://github.com/cjrh/dictomatic
+```
+
+`cargo binstall --git` reads this repo's `Cargo.toml`, which tells it where the
+release binaries live (`[package.metadata.binstall]`), and installs the
+prebuilt `dictomatic` for your platform. `cargo install --git` instead builds
+from source, embedding the word lists into a fresh binary.
 
 ## Overview
 
@@ -239,9 +263,10 @@ attaches them to a GitHub Release.
 cargo install cargo-release
 ```
 
-This crate is **not** published to crates.io, so always pass `--no-publish`
-(or, to make it permanent, add `[package.metadata.release]` with
-`publish = false` to `Cargo.toml`).
+This crate is distributed as prebuilt binaries via GitHub Releases, **not** via
+crates.io. `publish = false` is set in `Cargo.toml`, so `cargo release`
+automatically skips the crates.io publish step — there is nothing extra to
+configure or pass on the command line.
 
 ### Cut a release
 
@@ -249,10 +274,10 @@ From a clean checkout of `master`:
 
 ```shell script
 # Dry run first: cargo release changes nothing without --execute.
-cargo release patch --no-publish
+cargo release patch
 
 # Happy with the plan? Run it for real:
-cargo release patch --no-publish --execute
+cargo release patch --execute
 ```
 
 Use `patch`, `minor`, or `major` (or an explicit version such as `0.2.0`)
