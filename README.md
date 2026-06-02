@@ -1,6 +1,6 @@
 [![Licence](https://img.shields.io/badge/License-AGPL%203-purple.svg)](https://opensource.org/licenses/AGPL-3.0)
-[![Download Windows](https://img.shields.io/badge/download-windows-green.svg?logo=windows)](https://github.com/cjrh/dictomatic/releases/download/v0.1.0/dictomatic.exe)
-[![Download Linux](https://img.shields.io/badge/download-linux-green.svg?logo=linux)](https://github.com/cjrh/dictomatic/releases/download/v0.1.0/dictomatic)
+[![Download Windows](https://img.shields.io/badge/download-windows-green.svg?logo=windows)](https://github.com/cjrh/dictomatic/releases/latest/download/dictomatic-x86_64-pc-windows-msvc.exe)
+[![Download Linux](https://img.shields.io/badge/download-linux-green.svg?logo=linux)](https://github.com/cjrh/dictomatic/releases/latest/download/dictomatic-x86_64-unknown-linux-musl)
 
 # dictomatic
 Static, offline, command-line CLI dictionary
@@ -295,10 +295,10 @@ When run with `--execute`, `cargo release` will:
 
 Pushing the tag triggers the **Release** workflow, which then:
 
-5. Builds the binaries from that tag on two runners:
-   - Linux — a statically-linked `dictomatic`
-     (target `x86_64-unknown-linux-musl`).
-   - Windows — `dictomatic.exe` (target `x86_64-pc-windows-msvc`).
+5. Builds the binaries from that tag on two runners, naming each asset with its
+   Rust target triple:
+   - Linux — a statically-linked `dictomatic-x86_64-unknown-linux-musl`.
+   - Windows — `dictomatic-x86_64-pc-windows-msvc.exe`.
 6. Creates a GitHub Release for the tag and uploads both binaries as assets.
 
 ### What gets created, and where
@@ -307,15 +307,18 @@ Pushing the tag triggers the **Release** workflow, which then:
 - A **GitHub Release** for that tag, listed at
   <https://github.com/cjrh/dictomatic/releases>.
 - Two downloadable **assets** on that release:
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic`
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic.exe`
+  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic-x86_64-unknown-linux-musl`
+  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic-x86_64-pc-windows-msvc.exe`
+
+The target triple in the asset name is what lets `cargo binstall` find the
+right binary for each platform.
 
 > **Tag naming.** The Release workflow only fires for tags matching `v*`
 > (see `on.push.tags` in `release.yml`). `cargo release` already produces this
 > `vX.Y.Z` form by default, so no extra configuration is needed.
 
-> **Badges.** The download badges at the top of this README hardcode a specific
-> version in their URLs. After cutting a new release, update those links to the
-> new `vX.Y.Z` so they point at the latest binaries.
+> **Badges.** The download badges at the top of this README link through
+> `releases/latest/download/...`, which GitHub redirects to the newest release.
+> They track new releases automatically — no per-release edit needed.
 
 

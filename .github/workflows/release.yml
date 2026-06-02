@@ -1,8 +1,11 @@
 name: Release
 
-# Build the release binaries on a version tag (e.g. v0.1.0) and attach them
-# to the matching GitHub Release. The asset names (`dictomatic`,
-# `dictomatic.exe`) match the download badges in README.md.
+# Build the release binaries on a version tag (e.g. v0.1.0) and attach them to
+# the matching GitHub Release. Assets are named with the Rust target triple,
+# the convention `cargo binstall` and the rest of the ecosystem expect:
+#   dictomatic-x86_64-unknown-linux-musl       (Linux, static)
+#   dictomatic-x86_64-pc-windows-msvc.exe      (Windows)
+# See `[package.metadata.binstall]` in Cargo.toml and the badges in README.md.
 on:
   push:
     tags: ["v*"]
@@ -24,9 +27,11 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             bin: dictomatic
+            asset: dictomatic-x86_64-unknown-linux-musl
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             bin: dictomatic.exe
+            asset: dictomatic-x86_64-pc-windows-msvc.exe
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
@@ -40,7 +45,12 @@ jobs:
         run: echo "$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/bin" >> "$GITHUB_PATH"
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
+      # Rename the binary to its target-triple asset name. softprops/action-gh-release
+      # uploads files under their basename, so this name is what users download.
+      - name: Stage asset
+        shell: bash
+        run: cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "${{ matrix.asset }}"
       - name: Upload to release
         uses: softprops/action-gh-release@v3
         with:
-          files: target/${{ matrix.target }}/release/${{ matrix.bin }}
+          files: ${{ matrix.asset }}
