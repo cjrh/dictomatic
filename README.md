@@ -33,75 +33,6 @@ snag    verb    get by acting quickly and smartly       snag a bargain
 
 Just download the executable. Check out the Releases tab.
 
-## Cutting a release (maintainers)
-
-Releases are cut with [`cargo release`](https://github.com/crate-ci/cargo-release).
-You run a single command locally; GitHub Actions builds and publishes the
-binaries. The flow is: `cargo release` bumps the version and pushes a `vX.Y.Z`
-tag → the tag triggers the **Release** workflow
-(`.github/workflows/release.yml`) → the workflow builds the binaries and
-attaches them to a GitHub Release.
-
-### One-time setup
-
-```shell script
-cargo install cargo-release
-```
-
-This crate is **not** published to crates.io, so always pass `--no-publish`
-(or, to make it permanent, add `[package.metadata.release]` with
-`publish = false` to `Cargo.toml`).
-
-### Cut a release
-
-From a clean checkout of `master`:
-
-```shell script
-# Dry run first: cargo release changes nothing without --execute.
-cargo release patch --no-publish
-
-# Happy with the plan? Run it for real:
-cargo release patch --no-publish --execute
-```
-
-Use `patch`, `minor`, or `major` (or an explicit version such as `0.2.0`)
-to choose how the version is bumped.
-
-### What happens
-
-When run with `--execute`, `cargo release` will:
-
-1. Bump `version` in `Cargo.toml` and `Cargo.lock` (e.g. `0.1.0` → `0.1.1`).
-2. Commit that change.
-3. Create a git tag named `vX.Y.Z` (e.g. `v0.1.1`). The leading `v` is the
-   default for this single-crate repo, and it matters — see the note below.
-4. Push the commit and the tag to GitHub.
-
-Pushing the tag triggers the **Release** workflow, which then:
-
-5. Builds the binaries from that tag on two runners:
-   - Linux — a statically-linked `dictomatic`
-     (target `x86_64-unknown-linux-musl`).
-   - Windows — `dictomatic.exe` (target `x86_64-pc-windows-msvc`).
-6. Creates a GitHub Release for the tag and uploads both binaries as assets.
-
-### What gets created, and where
-
-- A git **tag** `vX.Y.Z` in the repository.
-- A **GitHub Release** for that tag, listed at
-  <https://github.com/cjrh/dictomatic/releases>.
-- Two downloadable **assets** on that release:
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic`
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic.exe`
-
-> **Tag naming.** The Release workflow only fires for tags matching `v*`
-> (see `on.push.tags` in `release.yml`). `cargo release` already produces this
-> `vX.Y.Z` form by default, so no extra configuration is needed.
-
-> **Badges.** The download badges at the top of this README hardcode a specific
-> version in their URLs. After cutting a new release, update those links to the
-> new `vX.Y.Z` so they point at the latest binaries.
-
 ## Overview
 
 The demo output further up looks a bit odd in the demo above because the 
@@ -292,3 +223,74 @@ significantly   adverb  in an important way or to an important degree   -
 significantly   adverb  in a statistically significant way      the two groups differed significantly
 
 ```
+
+## Cutting a release (maintainers)
+
+Releases are cut with [`cargo release`](https://github.com/crate-ci/cargo-release).
+You run a single command locally; GitHub Actions builds and publishes the
+binaries. The flow is: `cargo release` bumps the version and pushes a `vX.Y.Z`
+tag → the tag triggers the **Release** workflow
+(`.github/workflows/release.yml`) → the workflow builds the binaries and
+attaches them to a GitHub Release.
+
+### One-time setup
+
+```shell script
+cargo install cargo-release
+```
+
+This crate is **not** published to crates.io, so always pass `--no-publish`
+(or, to make it permanent, add `[package.metadata.release]` with
+`publish = false` to `Cargo.toml`).
+
+### Cut a release
+
+From a clean checkout of `master`:
+
+```shell script
+# Dry run first: cargo release changes nothing without --execute.
+cargo release patch --no-publish
+
+# Happy with the plan? Run it for real:
+cargo release patch --no-publish --execute
+```
+
+Use `patch`, `minor`, or `major` (or an explicit version such as `0.2.0`)
+to choose how the version is bumped.
+
+### What happens
+
+When run with `--execute`, `cargo release` will:
+
+1. Bump `version` in `Cargo.toml` and `Cargo.lock` (e.g. `0.1.0` → `0.1.1`).
+2. Commit that change.
+3. Create a git tag named `vX.Y.Z` (e.g. `v0.1.1`). The leading `v` is the
+   default for this single-crate repo, and it matters — see the note below.
+4. Push the commit and the tag to GitHub.
+
+Pushing the tag triggers the **Release** workflow, which then:
+
+5. Builds the binaries from that tag on two runners:
+   - Linux — a statically-linked `dictomatic`
+     (target `x86_64-unknown-linux-musl`).
+   - Windows — `dictomatic.exe` (target `x86_64-pc-windows-msvc`).
+6. Creates a GitHub Release for the tag and uploads both binaries as assets.
+
+### What gets created, and where
+
+- A git **tag** `vX.Y.Z` in the repository.
+- A **GitHub Release** for that tag, listed at
+  <https://github.com/cjrh/dictomatic/releases>.
+- Two downloadable **assets** on that release:
+  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic`
+  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic.exe`
+
+> **Tag naming.** The Release workflow only fires for tags matching `v*`
+> (see `on.push.tags` in `release.yml`). `cargo release` already produces this
+> `vX.Y.Z` form by default, so no extra configuration is needed.
+
+> **Badges.** The download badges at the top of this README hardcode a specific
+> version in their URLs. After cutting a new release, update those links to the
+> new `vX.Y.Z` so they point at the latest binaries.
+
+
