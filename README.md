@@ -26,16 +26,21 @@ snag    verb    get by acting quickly and smartly       snag a bargain
   which is licensed under the _Creative Commons Attribution-ShareAlike 4.0 International License_
 - Statically compiled, word lists are linked in. No dependencies. 
   Just download an executable for your target platform.
-- Fast; takes about 40 ms to emit the words. This makes it easy to drive 
-  from your editor, and will work offline.
+- Fast; a lookup completes in well under a millisecond (sub-millisecond
+  end-to-end, dominated by process startup rather than the lookup itself).
+  The word list and definitions are indexed at build time, so there is no
+  per-invocation parsing — just a binary search over data baked into the
+  binary. This makes it easy to drive from your editor, and works offline.
   
 ## Install
 
 ### Download a prebuilt binary
 
 The simplest option: grab the executable for your platform from the
-[Releases](https://github.com/cjrh/dictomatic/releases) page (these are the same
-binaries the download badges above point at).
+[Releases](https://github.com/cjrh/dictomatic/releases) page. Each release ships
+binaries for Linux (x86-64 glibc and static musl, plus aarch64 musl), macOS
+(Intel and Apple Silicon), and Windows (x86-64). The download badges above link
+to the x86-64 Linux and Windows builds of the latest release.
 
 ### Install with cargo
 
@@ -295,20 +300,27 @@ When run with `--execute`, `cargo release` will:
 
 Pushing the tag triggers the **Release** workflow, which then:
 
-5. Builds the binaries from that tag on two runners, naming each asset with its
-   Rust target triple:
-   - Linux — a statically-linked `dictomatic-x86_64-unknown-linux-musl`.
-   - Windows — `dictomatic-x86_64-pc-windows-msvc.exe`.
-6. Creates a GitHub Release for the tag and uploads both binaries as assets.
+5. Builds the binaries from that tag across three runners, naming each asset
+   with its Rust target triple. The matrix covers:
+   - Linux x86-64 — `dictomatic-x86_64-unknown-linux-gnu` and a static
+     `dictomatic-x86_64-unknown-linux-musl`.
+   - Linux aarch64 — a static `dictomatic-aarch64-unknown-linux-musl`.
+   - macOS — `dictomatic-x86_64-apple-darwin` (Intel) and
+     `dictomatic-aarch64-apple-darwin` (Apple Silicon).
+   - Windows x86-64 — `dictomatic-x86_64-pc-windows-msvc.exe`.
+6. Creates a GitHub Release for the tag and uploads every binary as an asset.
+
+The non-native targets are cross-compiled with `rustup target add` (and rust-lld
+for the static musl builds), so the whole matrix runs on the three standard
+GitHub runners — no `cross`/QEMU or cross-toolchains needed.
 
 ### What gets created, and where
 
 - A git **tag** `vX.Y.Z` in the repository.
 - A **GitHub Release** for that tag, listed at
   <https://github.com/cjrh/dictomatic/releases>.
-- Two downloadable **assets** on that release:
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic-x86_64-unknown-linux-musl`
-  - `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic-x86_64-pc-windows-msvc.exe`
+- One downloadable **asset per target** on that release, e.g.
+  `https://github.com/cjrh/dictomatic/releases/download/vX.Y.Z/dictomatic-aarch64-apple-darwin`.
 
 The target triple in the asset name is what lets `cargo binstall` find the
 right binary for each platform.

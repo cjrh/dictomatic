@@ -1,51 +1,48 @@
 mod types;
 
-use types::make_words;
-
 use clap::Parser;
-use fileinput::FileInput;
-use std::io;
-use std::io::{BufRead, BufReader};
+use std::io::{self, BufRead, Write};
 
 #[derive(Parser)]
 struct Cli {
     words: Vec<String>,
 }
 
-fn print_defns(defns: &[&str], idx: usize, word: &str) {
-    serde_json::from_str::<Vec<String>>(defns[idx])
-        .unwrap()
-        .iter()
-        .filter(|&s| !s.trim().is_empty())
-        .for_each(|s| println!("{}\t{}", word, &s));
+/// Writes a word's definitions to `out`: one `word\t<defn>` line per non-empty
+/// definition, followed by a trailing blank line. `defns` is the raw JSON array
+/// of "pos\tdefn\texample" strings stored for the word; parsing it here decodes
+/// JSON escapes (e.g. `\t`, `\uXXXX`) into their characters.
+fn print_defns(out: &mut impl Write, word: &str, defns: &str) -> io::Result<()> {
+    let parsed: Vec<String> = serde_json::from_str(defns).unwrap();
+    for s in parsed.iter().filter(|s| !s.trim().is_empty()) {
+        writeln!(out, "{}\t{}", word, s)?;
+    }
+    writeln!(out)
 }
 
 fn main() -> io::Result<()> {
-    // TODO: ^WORD\tPOS\tDEFN\tEXAMPLE$
-    let hm = make_words();
-    let words = hm.words;
-    let ds = hm.defns;
     let args = Cli::parse();
+    let stdout = io::stdout();
+    let mut out = io::BufWriter::new(stdout.lock());
+
+    // With no word arguments, read one word per line from stdin; otherwise look
+    // up each argument. Either way, a hit prints its definitions and a miss is
+    // silently skipped.
     if args.words.is_empty() {
-        let filenames: Vec<&str> = vec![];
-        let fileinput = FileInput::new(&filenames);
-        let reader = BufReader::new(fileinput);
-        for line in reader.lines() {
-            let w = line.unwrap();
-            let idx = match words.binary_search(&w.as_str()) {
-                Ok(idx) => idx,
-                Err(_) => continue,
-            };
-            print_defns(&ds, idx, &w);
-            println!();
+        let stdin = io::stdin();
+        for line in stdin.lock().lines() {
+            let w = line?;
+            if let Some(defns) = types::lookup(&w) {
+                print_defns(&mut out, &w, defns)?;
+            }
         }
     } else {
-        for w in args.words {
-            if let Ok(idx) = words.binary_search(&w.as_str()) {
-                print_defns(&ds, idx, &w);
-                println!();
-            };
+        for w in &args.words {
+            if let Some(defns) = types::lookup(w) {
+                print_defns(&mut out, w, defns)?;
+            }
         }
     }
-    Ok(())
+
+    out.flush()
 }
